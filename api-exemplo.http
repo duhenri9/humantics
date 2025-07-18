@@ -1,0 +1,45 @@
+### Registro de usuário
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "cliente@teste.com",
+  "password": "senhaSegura123"
+}
+
+### Login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "cliente@teste.com",
+  "password": "senhaSegura123"
+}
+> {% client.global.set("jwt", response.body.token); %}
+
+### Criar lead (use o token JWT do login)
+POST http://localhost:3000/leads
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "name": "Lead Teste",
+  "email": "lead@teste.com",
+  "phone": "11999999999"
+}
+
+### Criar PaymentIntent (armazena id)
+POST http://localhost:3000/payments/intent
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "amount": 5000,
+  "currency": "brl"
+}
+> {% client.global.set("paymentIntentId", response.body.id); %}
+
+### Consultar PaymentIntent (usa id e token)
+GET http://localhost:3000/payments/intent/{{paymentIntentId}}
+Authorization: Bearer {{jwt}}
+
