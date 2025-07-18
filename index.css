@@ -1,0 +1,536 @@
+/* Font optimization with display swap for better loading performance */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-light: #ffffff;
+  --color-dark: #171717;
+  
+  /* Font loading optimization */
+  font-display: swap;
+  
+  /* HumanTic Original Colors - Official Brand Color */
+  --primary: 235 78% 71%; /* Exact #6D7AFF */
+  --primary-hover: 235 78% 66%; /* Darker shade */
+  --secondary: 220 20% 40%; /* Dark gray */
+  --accent: 235 80% 70%; /* Same as primary */
+  --success: 140 100% 50%; /* Green */
+  --warning: 45 100% 55%; /* Orange */
+  --danger: 0 100% 60%; /* Red */
+  
+  /* shadcn/ui CSS variables */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 5.9% 10%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+}
+
+/* Apply optimized font stack */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-variation-settings: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize text rendering */
+h1, h2, h3, h4, h5, h6 {
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* HumanTic Custom Styles */
+.gradient-text {
+  background: linear-gradient(135deg, #6D7AFF 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-primary {
+  background: #6D7AFF;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.btn-primary:hover {
+  background: #5B69E5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(109, 122, 255, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: hsl(var(--secondary));
+  border: 2px solid hsl(var(--secondary));
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: hsl(var(--secondary));
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Animation classes */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Image optimization classes */
+.img-optimized {
+  /* Ensure images are responsive by default */
+  max-width: 100%;
+  height: auto;
+  
+  /* Prevent layout shift during loading */
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* WebP support with fallback */
+.img-webp {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Lazy loading placeholder */
+.img-placeholder {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Optimized image containers */
+.image-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.image-container::before {
+  content: '';
+  display: block;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.image-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Custom animations */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Smooth transitions with hardware acceleration */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Hardware acceleration for smooth animations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Optimize critical rendering path */
+.critical-resource {
+  font-display: swap;
+}
+
+/* Reduce layout shift for dynamic content */
+.layout-stable {
+  contain: layout style paint;
+}
+
+/* Performance optimizations for large lists */
+.virtual-scroll {
+  contain: strict;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Optimize focus states for accessibility */
+.focus-visible:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+/* Remove default focus styles when not using keyboard */
+.focus-visible:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Optimize print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a, a:visited {
+    text-decoration: underline;
+  }
+  
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-blob {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .gradient-text {
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+    background-clip: unset;
+    color: #000;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-light: #171717;
+    --color-dark: #ffffff;
+  }
+}
+
+/* Blog-specific styles */
+.blog-content {
+  @apply max-w-4xl mx-auto;
+}
+
+.blog-article {
+  @apply bg-white rounded-xl shadow-lg overflow-hidden;
+}
+
+.blog-category-badge {
+  @apply inline-block px-3 py-1 rounded-full text-sm font-medium text-white;
+}
+
+.blog-meta {
+  @apply flex items-center gap-2 text-sm text-gray-500;
+}
+
+.blog-title {
+  @apply text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight;
+}
+
+.blog-excerpt {
+  @apply text-gray-600 mb-4 leading-relaxed;
+}
+
+.blog-reading-time {
+  @apply flex items-center gap-2 text-sm text-gray-500;
+}
+
+/* Prose styles for blog articles */
+.prose {
+  @apply text-gray-700 leading-relaxed;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.prose h4 {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.prose p {
+  @apply mb-4 text-gray-700 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-2;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-4 space-y-2;
+}
+
+.prose li {
+  @apply text-gray-700 mb-2;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary pl-6 italic text-gray-600 my-6;
+}
+
+.prose strong {
+  @apply font-semibold text-gray-900;
+}
+
+.prose a {
+  @apply text-primary hover:text-primary/80 transition-colors;
+}
+
+.prose .feature-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 my-8;
+}
+
+.prose .feature-item {
+  @apply bg-gray-50 rounded-lg p-6;
+}
+
+.prose .feature-item h4 {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.prose .feature-item p {
+  @apply text-gray-600 text-sm;
+}
+
+.prose .cta-box {
+  @apply bg-primary/10 border border-primary/20 rounded-lg p-6 text-center my-8;
+}
+
+.prose .cta-box h3 {
+  @apply text-xl font-bold text-primary mb-2;
+}
+
+.prose .cta-box p {
+  @apply text-gray-700 mb-0;
+}
+
+/* Related articles section */
+.related-articles {
+  @apply bg-white py-16;
+}
+
+.related-article-card {
+  @apply bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow;
+}
+
+.related-article-title {
+  @apply text-lg font-semibold text-gray-900 mb-3 hover:text-primary transition-colors cursor-pointer;
+}
+
+/* Blog category colors */
+.category-ia-automacao {
+  background-color: #6D7AFF;
+}
+
+.category-casos-uso {
+  background-color: #10B981;
+}
+
+.category-tutoriais {
+  background-color: #F59E0B;
+}
+
+.category-mercado-tendencias {
+  background-color: #EF4444;
+}
+
+/* Blog hero section */
+.blog-hero {
+  @apply bg-gradient-to-br from-primary/5 to-purple-50 py-20;
+}
+
+.blog-hero-title {
+  @apply text-4xl md:text-6xl font-bold text-gray-900 mb-6;
+}
+
+.blog-hero-subtitle {
+  @apply text-xl text-gray-600 mb-8 max-w-3xl mx-auto;
+}
+
+/* Blog grid layouts */
+.blog-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+}
+
+.blog-featured-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-8;
+}
+
+.blog-category-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+/* Blog hover effects */
+.blog-card-hover {
+  @apply hover:shadow-xl transition-shadow duration-300;
+}
+
+.blog-link-hover {
+  @apply hover:text-primary/80 transition-colors;
+}
+
+/* Blog responsive images */
+.blog-image {
+  @apply w-full h-48 object-cover;
+}
+
+.blog-featured-image {
+  @apply w-full h-64 md:h-full object-cover;
+}
+
+/* Blog CTA sections */
+.blog-cta {
+  @apply bg-primary text-white py-16;
+}
+
+.blog-cta-title {
+  @apply text-3xl font-bold mb-4;
+}
+
+.blog-cta-subtitle {
+  @apply text-xl text-blue-100 mb-8;
+}
+
+.blog-cta-buttons {
+  @apply flex flex-col sm:flex-row gap-4 justify-center;
+}
+
+.blog-cta-button-primary {
+  @apply bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors;
+}
+
+.blog-cta-button-secondary {
+  @apply border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors;
+}
