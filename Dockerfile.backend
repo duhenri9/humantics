@@ -1,0 +1,39 @@
+# Build stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY server/ ./server/
+COPY shared/ ./shared/
+COPY tsconfig.json ./
+COPY drizzle.config.ts ./
+
+# Install dependencies and build
+RUN npm ci && npm run build:server
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files for production
+COPY package*.json ./
+COPY drizzle.config.ts ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy built files and server
+COPY --from=builder /app/dist ./dist
+COPY server/ ./server/
+COPY shared/ ./shared/
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+EXPOSE 5000
+
+# Run the application
+CMD ["node", "dist/index.js"]

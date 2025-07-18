@@ -1,0 +1,75 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp-humantic",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "87499af1-2cf3-4eba-9382-8ea19946d59e",
+      "name": "Webhook",
+      "webhookId": "a4c15e00-0652-4663-8cff-c4ffcf344ced"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/mcp/agent/mcp_personalizado_1751833568572/message",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"message\": \"{{ $json.Body || $json.message || $json.text || 'Olá, como posso ajudar?' }}\", \"user_id\": \"whatsapp_{{ $json.From || $json.phone || 'user' }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0],
+      "id": "516fb7e5-8741-4b7b-8665-e2e780415fac",
+      "name": "HumanTic Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"success\", \"response\": $json.response, \"agent\": \"HumanTic Assistant\", \"timestamp\": \"{{ new Date().toISOString() }}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [440, 0],
+      "id": "1700ff71-0b6c-485d-8dab-2d8df1986a9b",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HumanTic Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HumanTic Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "41292b265e1927dbce8df8dc4e7b61825edde82a713d6192a247e75d6e655b82"
+  }
+}

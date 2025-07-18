@@ -1,0 +1,192 @@
+{
+  "name": "WhatsApp → HumanTic Agent → Resposta",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-humantic",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "fa2c3c0b-7184-4b5b-9d53-f5b2d2b5b5b1",
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "whatsapp-humantic"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair dados WhatsApp\nconst message = $json.message || $json.text || $json.body?.text || '';\nconst phone = $json.phone || $json.from || $json.body?.from || '';\n\n// Log para debug\nconsole.log('Recebido:', { message, phone });\n\n// Preparar para HumanTic MCP\nreturn [{\n  message: message,\n  phone: phone.replace(/\\D/g, ''), // limpar formatação\n  timestamp: new Date().toISOString(),\n  original_payload: $json\n}];"
+      },
+      "id": "2a3b4c5d-6e7f-8g9h-0i1j-2k3l4m5n6o7p",
+      "name": "Processar WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/mcp/agent/mcp_personalizado_1751833568572/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            },
+            {
+              "name": "user_id",
+              "value": "whatsapp_{{ $json.phone }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3b4c5d6e-7f8g-9h0i-1j2k-3l4m5n6o7p8q",
+      "name": "HumanTic MCP Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pegar resposta do agente HumanTic\nconst response = $json.response || 'Desculpe, não consegui processar sua mensagem.';\nconst phone = $('Processar WhatsApp').item.json.phone;\n\n// Log para debug\nconsole.log('Resposta HumanTic:', response);\n\nreturn [{\n  text: response,\n  phone: phone,\n  message_type: \"text\",\n  success: true\n}];"
+      },
+      "id": "4c5d6e7f-8g9h-0i1j-2k3l-4m5n6o7p8q9r",
+      "name": "Formatar Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.whatsapp.com/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer SEU_TOKEN_WHATSAPP_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "5d6e7f8g-9h0i-1j2k-3l4m-5n6o7p8q9r0s",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Mensagem processada pelo HumanTic\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"agent\": \"HumanTic Assistant\"\n}",
+        "options": {}
+      },
+      "id": "6e7f8g9h-0i1j-2k3l-4m5n-6o7p8q9r0s1t",
+      "name": "Resposta Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "HumanTic MCP Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HumanTic MCP Agent": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resposta": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Resposta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "instanceId": "humantic-whatsapp-automation"
+  }
+}

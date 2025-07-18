@@ -1,0 +1,168 @@
+{
+  "name": "WhatsApp → HumanTic Agent → Venom-Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp-humantics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "id": "webhook-whatsapp",
+      "name": "WhatsApp Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://1f35dcaf-7e96-4df7-b402-2f3030c64013-00-3p314y6gwn25r.worf.replit.dev/api/mcp/agent/mcp_personalizado_1751833568572/message",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"message\": \"{{ $json.message || $json.body || $json.Body || 'Olá!' }}\", \"user_id\": \"whatsapp_{{ $json.phone || $json.from || 'user' }}\"}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "id": "humantics-agent",
+      "name": "HumanTic Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processar resposta do agente HumanTic\nconst agentResponse = $json.response || 'Olá! Como posso ajudar você?';\nconst phone = $('WhatsApp Webhook').item.json.phone || $('WhatsApp Webhook').item.json.from || 'user';\nconst success = $json.success !== false;\n\n// Log para debug\nconsole.log('Resposta do agente:', agentResponse);\nconsole.log('Telefone:', phone);\nconsole.log('Success:', success);\n\nreturn [{\n  response: agentResponse,\n  phone: phone.replace('@c.us', '').replace(/\\D/g, ''),\n  chatId: phone,\n  success: success,\n  timestamp: new Date().toISOString(),\n  agent: 'HumanTic Assistant'\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "id": "process-response",
+      "name": "Process Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-success",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "id": "check-success",
+      "name": "Check Success"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"response\": \"{{ $json.response }}\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"agent\": \"HumanTic Assistant\",\n  \"timestamp\": \"{{ $json.timestamp }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1120, 200],
+      "id": "respond-success",
+      "name": "Respond Success"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"error\",\n  \"response\": \"Desculpe, estamos com dificuldades técnicas. Entre em contato: +55 11 950377457\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1120, 400],
+      "id": "respond-error",
+      "name": "Respond Error"
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "HumanTic Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HumanTic Agent": {
+      "main": [
+        [
+          {
+            "node": "Process Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Response": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-07-07T11:00:00.000Z",
+  "versionId": "1"
+}

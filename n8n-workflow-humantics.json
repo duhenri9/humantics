@@ -1,0 +1,88 @@
+{
+  "name": "WhatsApp HumanTic Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp-humantics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "id": "webhook-whatsapp",
+      "name": "WhatsApp Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://1f35dcaf-7e96-4df7-b402-2f3030c64013-00-3p314y6gwn25r.worf.replit.dev/api/mcp/agent/mcp_personalizado_1751833568572/message",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\", \"Accept\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"message\": \"{{ $json.message || $json.body || $json.Body || 'Olá!' }}\", \"user_id\": \"whatsapp_{{ $json.phone || $json.from || 'user' }}\"}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "id": "humantics-agent",
+      "name": "HumanTic Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"response\": \"{{ $json.response }}\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"agent\": \"HumanTic Assistant\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [680, 300],
+      "id": "respond-webhook",
+      "name": "Respond Webhook"
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "HumanTic Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HumanTic Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "static_data": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-07-07T11:00:00.000Z",
+  "versionId": "1"
+}

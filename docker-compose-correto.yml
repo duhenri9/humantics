@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - humantics_network
+
+  venom-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.venom
+    container_name: venom-bot
+    ports:
+      - "3000:3000"
+    environment:
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/whatsapp-humantics
+      - HUMANTICS_API_URL=https://1f35dcaf-7e96-4df7-b402-2f3030c64013-00-3p314y6gwn25r.worf.replit.dev
+    volumes:
+      - venom_sessions:/app/sessions
+    depends_on:
+      - n8n
+    networks:
+      - humantics_network
+
+volumes:
+  n8n_data:
+  venom_sessions:
+
+networks:
+  humantics_network:
+    driver: bridge

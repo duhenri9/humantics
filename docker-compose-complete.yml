@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # Redis Database
+  redis:
+    image: redis:7-alpine
+    container_name: humantic-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - humantic_network
+    restart: unless-stopped
+
+  # Chatwoot (integração com Redis)
+  chatwoot-app:
+    image: chatwoot/chatwoot:latest
+    container_name: humantic-chatwoot
+    ports:
+      - "3001:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=chatwoot
+      - POSTGRES_USER=chatwoot
+      - POSTGRES_PASSWORD=chatwoot123
+      - SECRET_KEY_BASE=your_secret_key_here
+      - INSTALLATION_ENV=docker
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - humantic_network
+    restart: unless-stopped
+
+  # PostgreSQL para Chatwoot
+  postgres:
+    image: postgres:13
+    container_name: humantic-postgres
+    environment:
+      - POSTGRES_DB=chatwoot
+      - POSTGRES_USER=chatwoot
+      - POSTGRES_PASSWORD=chatwoot123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - humantic_network
+    restart: unless-stopped
+
+  # HumanTic Application (Frontend + Backend)
+  humantic-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: humantic-app
+    ports:
+      - "5000:5000"
+    environment:
+      # Redis Configuration
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      
+      # Email Configuration
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=onboarding@humantic.wm3digital.com.br
+      - ADMIN_EMAIL=info@wm3digital.com.br
+      
+      # Stripe Configuration
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      
+      # Application
+      - NODE_ENV=production
+      - SESSION_SECRET=${SESSION_SECRET}
+      - PORT=5000
+      
+      # Chatwoot Integration
+      - CHATWOOT_URL=http://chatwoot-app:3000
+      - CHATWOOT_API_TOKEN=${CHATWOOT_API_TOKEN}
+      
+      # N8N Integration
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/humantic
+      
+    depends_on:
+      - redis
+      - chatwoot-app
+    networks:
+      - humantic_network
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  # N8N Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: humantic-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=humantic123
+      # Redis para N8N
+      - N8N_REDIS_HOST=redis
+      - N8N_REDIS_PORT=6379
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - redis
+    networks:
+      - humantic_network
+    restart: unless-stopped
+
+  # Venom-Bot WhatsApp Integration
+  venom-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.venom
+    container_name: humantic-venom
+    ports:
+      - "3002:3000"
+    environment:
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/whatsapp-humantic
+      - HUMANTIC_API_URL=http://humantic-app:5000
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - venom_sessions:/app/sessions
+    depends_on:
+      - redis
+      - humantic-app
+      - n8n
+    networks:
+      - humantic_network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: humantic-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - humantic-app
+      - chatwoot-web
+      - n8n
+    networks:
+      - humantic_network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  n8n_data:
+  venom_sessions:
+
+networks:
+  humantic_network:
+    driver: bridge
